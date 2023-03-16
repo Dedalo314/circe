@@ -1,0 +1,6 @@
+epochs: 100
+accelerator: gpu
+devices: -1
+default_root_dir: "???"
+gradient_clip_val: 1.0
+log_every_n_steps: 5

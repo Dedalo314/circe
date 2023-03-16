@@ -1,0 +1,4 @@
+defaults:
+  - data: audio-vq-codebook
+  - model: circe-gpt
+  - trainer: trainer-gpu

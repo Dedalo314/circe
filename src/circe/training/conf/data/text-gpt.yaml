@@ -1,0 +1,11 @@
+dataset:
+  dataset_class: circe.datasets.text_gpt.TextGPTDataset
+  data_dir: /Circe/datasets/shakespeare_char
+  block_size: 128
+train:
+  batch_size: 16
+  shuffle: true
+val:
+  batch_size: 8
+test:
+  batch_size: 8

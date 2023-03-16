@@ -1,0 +1,5 @@
+.vscode/
+datasets/*
+!src/circe/datasets
+models-*/
+__pycache__/

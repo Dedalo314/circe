@@ -4,3 +4,4 @@ datasets/*
 models-*/
 __pycache__/
 outputs/
+*.pt

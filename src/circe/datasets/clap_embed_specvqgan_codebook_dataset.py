@@ -8,33 +8,32 @@ import glob
 
 import numpy as np
 import torch
-import librosa
 from einops import rearrange
 
 logger = logging.getLogger(__name__)
 
 
-class AudioVQCodebookDataset(torch.utils.data.Dataset):
+class CLAPEmbedSpecVQGANCodebookDataset(torch.utils.data.Dataset):
     def __init__(self, cfg, split):
         super().__init__()
 
         codes_files = glob.glob(os.path.join(cfg.codes_data_dir, "*.npy"))
         random.Random(0).shuffle(codes_files)
-        audio_files = [
+        clap_files = [
             os.path.join(
-                cfg.audio_data_dir,
-                f"{os.path.splitext(os.path.basename(codes_file))[0]}.wav"
+                cfg.clap_embeds_data_dir,
+                f"{os.path.splitext(os.path.basename(codes_file))[0]}.npy"
             ) for codes_file in codes_files
         ]
 
         if split == "train":
-            self.audio_files = audio_files[:int(
-                len(audio_files)*cfg.train_percentage)]
+            self.clap_files = clap_files[:int(
+                len(clap_files)*cfg.train_percentage)]
             self.codes_files = codes_files[:int(
                 len(codes_files)*cfg.train_percentage)]
         else:
-            self.audio_files = audio_files[int(
-                len(audio_files)*cfg.train_percentage):]
+            self.clap_files = clap_files[int(
+                len(clap_files)*cfg.train_percentage):]
             self.codes_files = codes_files[int(
                 len(codes_files)*cfg.train_percentage):]
 
@@ -46,14 +45,11 @@ class AudioVQCodebookDataset(torch.utils.data.Dataset):
         self.F = 5  # from SpecVQGAN
 
     def __len__(self):
-        return len(self.audio_files)*10
+        return len(self.clap_files)*5
 
     def __getitem__(self, idx):
-        audio_file = self.audio_files[idx % len(self.audio_files)]
+        clap_file = self.clap_files[idx % len(self.clap_files)]
         codes_file = self.codes_files[idx % len(self.codes_files)]
-
-        # Load audio waveform for CLAP
-        audio_waveform, _ = librosa.load(audio_file, sr=self.clap_sr)
 
         # Load codes from SpecVQGAN
         # Codes are FxT, where F=5. Upsampling rate is 1/16 in spectrogram
@@ -70,23 +66,6 @@ class AudioVQCodebookDataset(torch.utils.data.Dataset):
         labels_chunk = torch.from_numpy(
             codes[rand_start_frame:rand_start_frame + self.chunk_frames_22050 * self.F + 1])
 
-        # Chunk audio waveform
-        audio_waveform = audio_waveform[
-            ...,
-            self._flatted_frame_to_sample_48k(
-                rand_start_frame
-            ):self._flatted_frame_to_sample_48k(
-                rand_start_frame
-            ) + self._frame_to_sample_48k(
-                self.chunk_frames_22050
-            )
-        ]
-        # print(f"{codes_chunk.shape=}\n{labels_chunk.shape=}\n{audio_waveform.shape=}\n")
+        clap_embed = np.load(clap_file)
 
-        return audio_waveform, codes_chunk, labels_chunk
-
-    def _flatted_frame_to_sample_48k(self, frame: int) -> int:
-        return int((frame // 5) * 256 * 16 * 48 // 22.05)
-
-    def _frame_to_sample_48k(self, frame: int) -> int:
-        return int(frame * 256 * 16 * 48 // 22.05)
+        return clap_embed, codes_chunk, labels_chunk

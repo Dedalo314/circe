@@ -4,6 +4,7 @@ albumentations==1.3.0
 braceexpand==0.1.7
 colossalai==0.2.5
 einops==0.6.0
+encodec==0.1.1
 ftfy==6.1.1
 h5py==3.8.0
 hydra-core==1.3.1
@@ -16,11 +17,14 @@ omegaconf==2.3.0
 opencv-python-headless==4.5.4.58
 pandas==1.4.3
 Pillow==9.4.0
+plotly==5.13.1
+progressbar==2.5
 pytorch-lightning==1.9.2
 pytube==12.1.0
 PyYAML==6.0
 regex==2022.3.2
 requests==2.28.0
+rich==13.3.1
 scikit-learn==1.1.1
 scipy==1.8.1
 seaborn==0.12.2
@@ -34,4 +38,3 @@ transformers==4.20.1
 wandb==0.13.10
 webdataset==0.2.35
 wget==3.2
-progressbar==2.5

@@ -1,0 +1,7 @@
+models-*/
+.vscode/
+datasets/*
+!src/circe/datasets/
+notebooks/
+specvqgan/
+outputs/

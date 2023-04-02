@@ -2,53 +2,44 @@ import argparse
 import os
 import glob
 
-from encodec import EncodecModel
-from encodec.utils import convert_audio
-import torchaudio
+import librosa
 import torch
 import numpy as np
 from rich.progress import track
+import laion_clap
 
 def parse_args(args=None):
-    parser = argparse.ArgumentParser("Precompute EnCodec features for given .wav")
+    parser = argparse.ArgumentParser("Precompute CLAP audio features for given .wav")
     parser.add_argument("-i", "--in_folder", type=str, required=True,
         help="Input folder with .wav to extract quantized features with EnCodec")
     parser.add_argument("-o", "--out_folder", type=str, required=True,
         help="Output folder to store extracted quantized features")
     parser.add_argument("--max_samples", type=int,
-        help="Maximum no. samples in waveform at 24 kHz")
+        help="Maximum no. samples in waveform at 48kHz")
     return parser.parse_args(args=args)
 
 def main(args):
-    # Instantiate a pretrained EnCodec model
+    # Instantiate a pretrained CLAP model
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = EncodecModel.encodec_model_24khz()
-    model.to(device)
-    model.eval()
-    model.requires_grad_(False)
-    model.set_target_bandwidth(3.0)
-
+    clap = laion_clap.CLAP_Module(enable_fusion=True).to(device)
+    clap.eval()
+    clap.requires_grad_(False)
     audios = glob.glob(os.path.join(args.in_folder, "*.wav"))
     os.makedirs(args.out_folder, exist_ok=True)
-    for audio in track(audios, description="Extracting with EnCodec..."):
+    for audio in track(audios, description="Processing..."):
         outfile = os.path.join(args.out_folder, f"{os.path.splitext(os.path.basename(audio))[0]}.npy")
         if os.path.exists(outfile):
             continue
-        # Load and pre-process the audio waveform
-        wav, sr = torchaudio.load(audio)
-        wav = convert_audio(wav, sr, model.sample_rate, model.channels)
+        wav, _ = librosa.load(audio, sr=48_000)
         if args.max_samples is not None and wav.shape[-1] > args.max_samples:
-            wav = wav[..., :args.max_samples]
-        wav = wav.to(device)
-        wav = wav.unsqueeze(0)
-
-        # Extract discrete codes from EnCodec
+            continue
         with torch.inference_mode():
-            encoded_frames = model.encode(wav)
-        codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
+            audio_emb = clap.get_audio_embedding_from_data([wav])
+        assert audio_emb.shape[-1] == 512
+
         np.save(
             outfile,
-            codes.cpu().numpy()
+            audio_emb
         )
 
 if __name__ == "__main__":

@@ -4,14 +4,13 @@ import torch
 from torch import nn
 import torchaudio
 from einops import rearrange
-from circe.clap.open_clip import create_model
 from transformers import GPT2Config, GPT2LMHeadModel, RobertaTokenizer
 from colossalai.nn.optimizer import HybridAdam
 import laion_clap
 
 logger = logging.getLogger(__name__)
 
-class CirceGPT_AR(nn.Module):
+class CirceGPT_online(nn.Module):
     def __init__(self, cfg):
         super().__init__()
         # GPT2 for LM

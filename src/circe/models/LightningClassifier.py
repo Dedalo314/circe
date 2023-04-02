@@ -1,6 +1,6 @@
 import logging
 
-from torch import Tensor, nn, no_grad, topk, multinomial, cat
+from torch import Tensor, nn, no_grad, topk, multinomial, cat, max, inference_mode, argmax
 import pytorch_lightning as pl
 
 from circe.utils.import_class import import_class
@@ -13,6 +13,7 @@ class LightningClassifier(pl.LightningModule):
     """
     def __init__(self, cfg) -> None:
         super(LightningClassifier, self).__init__()
+        self.save_hyperparameters()
         self._conf = cfg
         self.learning_rate = cfg.lr
         self.model_class = import_class(cfg.model_class)
@@ -20,9 +21,33 @@ class LightningClassifier(pl.LightningModule):
     def forward(self, x: Tensor) -> Tensor:
         return self.classifier(x)
 
-    @no_grad()
+    @inference_mode()
+    def generate_max_prob(self, idx, max_new_tokens):
+        """
+        Based on NanoGPT
+        
+        Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
+        the sequence max_new_tokens times, feeding the predictions back into the model each time.
+        The token with highest probability is always selected.
+        """
+        for _ in range(max_new_tokens):
+            # if the sequence context is growing too long we must crop it at block_size
+            idx_cond = idx if idx.size(1) <= self._conf.block_size else idx[:, -self._conf.block_size:]
+            # forward the model to get the logits for the index in the sequence
+            logits = self(idx_cond)
+            # pluck the logits at the final step
+            logits = logits[:, -1, :]
+            # take token with highest probability (highest logit)
+            idx_next = argmax(logits, dim=-1, keepdim=True)
+            # append sampled index to the running sequence and continue
+            idx = cat((idx, idx_next), dim=1)
+        return idx
+
+    @inference_mode()
     def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
         """
+        Based on NanoGPT
+
         Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
         Most likely you'll want to make sure to be in model.eval() mode of operation for this.
@@ -61,6 +86,7 @@ class LightningClassifier(pl.LightningModule):
     def training_step(self, train_batch, batch_idx):
         X, y = train_batch
         logits = self(X)
+        assert max(y) < self._conf.vocab_size
         loss = nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), y.view(-1), ignore_index=-1)
         self.log("Loss/train", loss)
         return loss

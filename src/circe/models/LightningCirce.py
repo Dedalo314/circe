@@ -1,12 +1,12 @@
 import logging
 
-from torch import Tensor, nn, no_grad, topk, multinomial, cat
+from torch import Tensor, nn, inference_mode, topk, multinomial, cat, max
 import pytorch_lightning as pl
 from einops import rearrange
 
 from circe.utils.import_class import import_class
 
-class LightningARCLAP(pl.LightningModule):
+class LightningCirce(pl.LightningModule):
     r"""
     Classifier abstraction for different models
 
@@ -14,26 +14,26 @@ class LightningARCLAP(pl.LightningModule):
     """
     def __init__(self, cfg) -> None:
         super().__init__()
+        self.save_hyperparameters()
         self._conf = cfg
         self.learning_rate = cfg.lr
         self.model_class = import_class(cfg.model_class)
         
-    def forward(self, codes, audio_waveform=None, inference_text=None, attention_mask=None) -> Tensor:
-        return self.classifier(codes, audio_waveform, inference_text, attention_mask)
+    def forward(self, codes, clap_embedding, attention_mask=None) -> Tensor:
+        return self.classifier(codes, clap_embedding, attention_mask)
 
-    @no_grad()
-    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
+    @inference_mode()
+    def generate(self, idx, max_new_tokens, clap_embed, temperature=1.0, top_k=None):
         """
         Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
         Most likely you'll want to make sure to be in model.eval() mode of operation for this.
         """
-        raise NotImplementedError
         for _ in range(max_new_tokens):
             # if the sequence context is growing too long we must crop it at block_size
-            idx_cond = idx if idx.size(1) <= self._conf.block_size else idx[:, -self._conf.block_size:]
+            idx_cond = idx if idx.size(1) <= self._conf.block_size - 1 else idx[:, -self._conf.block_size+1:]
             # forward the model to get the logits for the index in the sequence
-            logits = self(idx_cond)
+            logits = self(idx_cond, clap_embed)
             # pluck the logits at the final step and scale by desired temperature
             logits = logits[:, -1, :] / temperature
             # optionally crop the logits to only the top k options
@@ -61,9 +61,8 @@ class LightningARCLAP(pl.LightningModule):
         return optimizer
 
     def training_step(self, train_batch, batch_idx):
-        audio_waveform, codes, labels = train_batch
-        logits = self(codes, audio_waveform=audio_waveform, inference_text=None, attention_mask=None)[:, 1:]
-        # print(f"{logits.shape=}\n{labels.shape=}\n")
+        clap_embedding, codes, labels = train_batch
+        logits = self(codes, clap_embedding=clap_embedding, attention_mask=None)
         loss = nn.functional.cross_entropy(logits.reshape(-1, logits.size(-1)), labels.reshape(-1), ignore_index=-1)
         self.log("Loss/train", loss)
         return loss
@@ -75,8 +74,8 @@ class LightningARCLAP(pl.LightningModule):
         self._shared_eval(test_batch, batch_idx, "test")
 
     def _shared_eval(self, batch, batch_idx, prefix):
-        audio_waveform, codes, labels = batch
-        logits = self(codes, audio_waveform=audio_waveform, inference_text=None, attention_mask=None)[:, 1:]
+        clap_embedding, codes, labels = batch
+        logits = self(codes, clap_embedding=clap_embedding, attention_mask=None)
         # print(f"{logits.shape=}\n{labels.shape=}\n")
         loss = nn.functional.cross_entropy(logits.reshape(-1, logits.size(-1)), labels.reshape(-1), ignore_index=-1)
         self.log(f"Loss/{prefix}", loss)

@@ -81,4 +81,3 @@ LAYER_BUILDER_DICT['Dropout'] = build_dropout
 LAYER_BUILDER_DICT['BN'] = build_bn
 
 LAYER_BUILDER_DICT['InnerProduct'] = build_linear
-

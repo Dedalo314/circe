@@ -40,7 +40,7 @@ class CLAP_Module(torch.nn.Module):
         Parameters
         ----------
         enable_fusion: bool
-            if true, it will create the fusion clap model, otherwise non-fusion clap model (default: false) 
+            if true, it will create the fusion clap model, otherwise non-fusion clap model (default: false)
         device: str
             if None, it will automatically detect the device (gpu or cpu)
         amodel: str
@@ -92,7 +92,7 @@ class CLAP_Module(torch.nn.Module):
         Parameters
         ----------
         ckpt: str
-            if ckpt is specified, the model will load this ckpt, otherwise the model will download the ckpt from zenodo. \n 
+            if ckpt is specified, the model will load this ckpt, otherwise the model will download the ckpt from zenodo. \n
             For fusion model, it will download the 630k+audioset fusion model (id=3). For non-fusion model, it will download the 630k+audioset model (id=1).
         model_id:
             if model_id is specified, you can download our best ckpt, as:
@@ -130,33 +130,33 @@ class CLAP_Module(torch.nn.Module):
         param_names = [n for n, p in self.model.named_parameters()]
         for n in param_names:
             print(n, "\t", "Loaded" if n in ckpt else "Unloaded")
-    
+
     def get_audio_embedding_from_filelist(self, x):
         """get audio embeddings from the audio file list
 
         Parameters
         ----------
-        x: List[str] (N,): 
+        x: List[str] (N,):
             an audio file list to extract features, audio files can have different lengths (as we have the feature fusion machanism)
-        
+
         Returns
         ----------
         audio_embed : numpy.darray (N,D):
             audio embeddings that extracted from audio files
-        """ 
+        """
         self.model.eval()
         audio_input = []
         for f in x:
             # load the waveform of the shape (T,), should resample to 48000
-            audio_waveform, _ = librosa.load(f, sr=48000)           
+            audio_waveform, _ = librosa.load(f, sr=48000)
             # quantize
             audio_waveform = int16_to_float32(float32_to_int16(audio_waveform))
             audio_waveform = torch.from_numpy(audio_waveform).float()
             temp_dict = {}
             # the 'fusion' truncate mode can be changed to 'rand_trunc' if run in unfusion mode
             temp_dict = get_audio_features(
-                temp_dict, audio_waveform, 480000, 
-                data_truncating='fusion', 
+                temp_dict, audio_waveform, 480000,
+                data_truncating='fusion',
                 data_filling='repeatpad',
                 audio_cfg=self.model_cfg['audio_cfg']
             )
@@ -171,24 +171,24 @@ class CLAP_Module(torch.nn.Module):
 
         Parameters
         ----------
-        x: np.darray (N,T): 
-            audio data, must be mono audio tracks.      
+        x: np.darray (N,T):
+            audio data, must be mono audio tracks.
         Returns
         ----------
         audio embed: numpy.darray (N,D):
             audio embeddings that extracted from audio files
-        """ 
+        """
         self.model.eval()
         audio_input = []
-        for audio_waveform in x:          
+        for audio_waveform in x:
             # quantize
             audio_waveform = int16_to_float32(float32_to_int16(audio_waveform))
             audio_waveform = torch.from_numpy(audio_waveform).float()
             temp_dict = {}
             # the 'fusion' truncate mode can be changed to 'rand_trunc' if run in unfusion mode
             temp_dict = get_audio_features(
-                temp_dict, audio_waveform, 480000, 
-                data_truncating='fusion', 
+                temp_dict, audio_waveform, 480000,
+                data_truncating='fusion',
                 data_filling='repeatpad',
                 audio_cfg=self.model_cfg['audio_cfg']
             )
@@ -204,16 +204,16 @@ class CLAP_Module(torch.nn.Module):
 
         Parameters
         ----------
-        x: List[str] (N,): 
-            text list 
+        x: List[str] (N,):
+            text list
         tokenizer: func:
             the tokenizer function, if not provided (None), will use the default Roberta tokenizer.
-        
+
         Returns
         ----------
         text_embed : numpy.darray (N,D):
             text embeddings that extracted from texts
-        """ 
+        """
         self.model.eval()
         if tokenizer is not None:
             text_input = tokenizer(x)
@@ -222,5 +222,3 @@ class CLAP_Module(torch.nn.Module):
         text_embed = self.model.get_text_embedding(text_input)
         text_embed = text_embed.detach().cpu().numpy()
         return text_embed
-        
-    

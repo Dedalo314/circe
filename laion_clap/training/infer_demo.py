@@ -35,8 +35,8 @@ def infer_text():
         fusion_type=fusion_type
     )
     # load the text, can be a list (i.e. batch size)
-    text_data = ["I love the contrastive learning", "I love the pretrain model"] 
-    # tokenize for roberta, if you want to tokenize for another text encoder, please refer to data.py#L43-90 
+    text_data = ["I love the contrastive learning", "I love the pretrain model"]
+    # tokenize for roberta, if you want to tokenize for another text encoder, please refer to data.py#L43-90
     text_data = tokenizer(text_data)
     model.eval()
     text_embed = model.get_text_embedding(text_data)
@@ -45,7 +45,7 @@ def infer_text():
     print(text_embed.shape)
 
 def infer_audio():
-    
+
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     precision = 'fp32'
     amodel = 'HTSAT-tiny' # or 'PANN-14'
@@ -65,7 +65,7 @@ def infer_audio():
     )
 
     # load the waveform of the shape (T,), should resample to 48000
-    audio_waveform, sr = librosa.load('/home/la/kechen/Research/KE_CLAP/ckpt/test_clap_short.wav', sr=48000) 
+    audio_waveform, sr = librosa.load('/home/la/kechen/Research/KE_CLAP/ckpt/test_clap_short.wav', sr=48000)
     # quantize
     audio_waveform = int16_to_float32(float32_to_int16(audio_waveform))
     audio_waveform = torch.from_numpy(audio_waveform).float()
@@ -73,8 +73,8 @@ def infer_audio():
 
     # the 'fusion' truncate mode can be changed to 'rand_trunc' if run in unfusion mode
     audio_dict = get_audio_features(
-        audio_dict, audio_waveform, 480000, 
-        data_truncating='fusion', 
+        audio_dict, audio_waveform, 480000,
+        data_truncating='fusion',
         data_filling='repeatpad',
         audio_cfg=model_cfg['audio_cfg']
     )
@@ -84,7 +84,7 @@ def infer_audio():
     audio_embed = audio_embed.detach().cpu().numpy()
     print(audio_embed)
     print(audio_embed.shape)
-    
+
 
 
 if __name__ == "__main__":

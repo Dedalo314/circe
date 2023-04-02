@@ -40,7 +40,7 @@ class CirceGPT(nn.Module):
         else:
             inputs_embeds = clap_embed
         print(f"{inputs_embeds.shape=}\n")
-        
+
         # Only return lm_logits
         return self.gpt2(
             inputs_embeds=inputs_embeds,

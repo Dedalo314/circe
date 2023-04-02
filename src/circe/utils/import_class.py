@@ -7,4 +7,3 @@ def import_class(model_class: str):
         ),
         model_class.split(".")[-1]
     )
-    

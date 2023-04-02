@@ -61,7 +61,7 @@ class CirceGPT_online(nn.Module):
         print(f"{embed.shape=}\n{codes.shape=}\n")
         inputs_embeds = torch.cat([embed, codes], 1)
         print(f"{inputs_embeds=}")
-        
+
         # Only return lm_logits
         return self.gpt2(
             inputs_embeds=inputs_embeds,

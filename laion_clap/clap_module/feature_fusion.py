@@ -173,7 +173,7 @@ class AFF(nn.Module):
             )
         else:
             raise f'the type is not supported.'
-        
+
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x, residual):
@@ -190,4 +190,3 @@ class AFF(nn.Module):
         if flag:
             xo = xo[0].unsqueeze(0)
         return xo
-

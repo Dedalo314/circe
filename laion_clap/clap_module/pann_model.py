@@ -540,4 +540,3 @@ def create_pann_model(audio_cfg, enable_fusion=False, fusion_type='None'):
         return model
     except:
         raise RuntimeError(f'Import Model for {audio_cfg.model_name} not found, or the audio cfg parameters are not enough.')
-

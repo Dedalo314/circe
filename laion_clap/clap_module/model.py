@@ -700,7 +700,7 @@ class CLAP(nn.Module):
 
         Parameters
         ----------
-        data: torch.Tensor 
+        data: torch.Tensor
             a tensor of text embedding
 
         Returns
@@ -714,7 +714,7 @@ class CLAP(nn.Module):
             data[k] = data[k].to(device)
         text_embeds = self.encode_text(data, device=device)
         text_embeds = F.normalize(text_embeds, dim=-1)
-        
+
         return text_embeds
 
     def get_audio_embedding(self, data):
@@ -741,7 +741,7 @@ class CLAP(nn.Module):
         audio_embeds = F.normalize(audio_embeds, dim=-1)
         return audio_embeds
 
-            
+
 
     def audio_infer(self, audio, hopsize=None, device=None):
         """Forward one audio and produce the audio embedding

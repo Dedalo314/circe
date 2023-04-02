@@ -133,7 +133,7 @@ def main():
     args = parse_args()
     # sanitize model name for filesystem / uri use, easier if we don't use / in name as a rule?
     args.amodel = args.amodel.replace("/", "-")
-    
+
     pretrained_ckpts = sorted(glob.glob(os.path.join(args.pretrained, "*.pt")), key=os.path.getmtime)
 
     if args.name is None:
@@ -256,9 +256,9 @@ def main():
         pretrain_epoch = 0
         if 'epoch' in ckpt:
             pretrain_epoch = ckpt['epoch']
-        # train 
+        # train
         best_metrics = lp_main(args, device, writer, pretrain_epoch, idx)
-        
+
         if args.wandb and is_master(args):
             assert wandb is not None, "Please install wandb."
             for name, val in best_metrics.items():
@@ -299,9 +299,9 @@ def lp_main(args, device, writer, pretrain_epoch, idx):
         enable_fusion=args.enable_fusion,
         fusion_type=args.fusion_type
     )
-    
+
     args.lp_out_ch = len(list(args.class_index_dict.keys()))
-    # Linear Probe 
+    # Linear Probe
     if idx == 0:
         logging.info(f"linear probe using mlp: {args.lp_mlp}")
         logging.info(f"linear probe using freeze: {args.lp_freeze}")
@@ -312,13 +312,13 @@ def lp_main(args, device, writer, pretrain_epoch, idx):
         logging.info(f"linear probe lp_metrics: {args.lp_metrics}")
 
     model = LinearProbe(
-        clap_model, 
-        mlp=args.lp_mlp, freeze=args.lp_freeze, 
+        clap_model,
+        mlp=args.lp_mlp, freeze=args.lp_freeze,
         in_ch=512, out_ch=args.lp_out_ch,
         act=args.lp_act
     ) # in_ch is fixed (i.e., 512)
     model = model.to(device)
-    
+
     if args.horovod:
         with torch.no_grad():
             for param in model.parameters():
@@ -337,7 +337,7 @@ def lp_main(args, device, writer, pretrain_epoch, idx):
                 val = getattr(args, name)
                 logging.info(f"  {name}: {val}")
                 f.write(f"{name}: {val}\n")
-    
+
 
     if args.distributed and not args.horovod:
         if args.use_bn_sync:
@@ -511,5 +511,3 @@ def copy_codebase(args):
 
 if __name__ == "__main__":
     main()
-
-

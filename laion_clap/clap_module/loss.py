@@ -4,7 +4,7 @@ import torch.distributed.nn
 from torch import distributed as dist, nn as nn
 from torch.nn import functional as F
 import numpy as np
-from sklearn.metrics import average_precision_score, roc_auc_score, accuracy_score 
+from sklearn.metrics import average_precision_score, roc_auc_score, accuracy_score
 
 try:
     import horovod.torch as hvd
@@ -15,7 +15,7 @@ except ImportError:
 def gather_features(
         audio_features,
         text_features,
-        audio_features_mlp=None, 
+        audio_features_mlp=None,
         text_features_mlp=None,
         local_loss=False,
         gather_with_grad=False,
@@ -159,9 +159,9 @@ class ClipLoss(nn.Module):
             if not self.weighted_loss:
                 total_loss = (
                     F.cross_entropy(a_logits_per_audio, labels) +
-                    F.cross_entropy(a_logits_per_text, labels) + 
+                    F.cross_entropy(a_logits_per_text, labels) +
                     F.cross_entropy(t_logits_per_audio, labels) +
-                    F.cross_entropy(t_logits_per_text, labels) 
+                    F.cross_entropy(t_logits_per_text, labels)
                     ) / 4
             else:
                 audio_weight = (audio_features@audio_features.T).detach()
@@ -170,9 +170,9 @@ class ClipLoss(nn.Module):
                 text_weight = (torch.exp(torch.sum(text_weight, axis=1)/(self.weight_loss_kappa*len(text_features)))).detach()
                 total_loss = (
                     F.cross_entropy(a_logits_per_audio, labels, weight=audio_weight) +
-                    F.cross_entropy(a_logits_per_text, labels, weight=audio_weight) + 
+                    F.cross_entropy(a_logits_per_text, labels, weight=audio_weight) +
                     F.cross_entropy(t_logits_per_audio, labels, weight=text_weight) +
-                    F.cross_entropy(t_logits_per_text, labels, weight=text_weight) 
+                    F.cross_entropy(t_logits_per_text, labels, weight=text_weight)
                     ) / 4
         else:
             if self.world_size > 1:
@@ -304,4 +304,3 @@ class LPLoss(nn.Module):
     def forward(self, pred, target):
         loss = self.loss_func(pred, target)
         return loss
-        

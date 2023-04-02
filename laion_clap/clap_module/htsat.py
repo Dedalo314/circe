@@ -88,7 +88,7 @@ class PatchEmbed(nn.Module):
 
         self.enable_fusion = enable_fusion
         self.fusion_type = fusion_type
-        
+
         padding = ((patch_size[0] - patch_stride[0]) // 2, (patch_size[1] - patch_stride[1]) // 2)
 
         if (self.enable_fusion) and (self.fusion_type == 'channel_map'):
@@ -104,11 +104,11 @@ class PatchEmbed(nn.Module):
             elif self.fusion_type == 'aff_2d':
                 self.fusion_model = AFF(channels=embed_dim, type='2D')
             elif self.fusion_type == 'iaff_2d':
-                self.fusion_model = iAFF(channels=embed_dim, type='2D')    
+                self.fusion_model = iAFF(channels=embed_dim, type='2D')
     def forward(self, x, longer_idx = None):
         if (self.enable_fusion) and (self.fusion_type in ['daf_2d','aff_2d','iaff_2d']):
             global_x = x[:,0:1,:,:]
-            
+
 
             # global processing
             B, C, H, W = global_x.shape
@@ -129,7 +129,7 @@ class PatchEmbed(nn.Module):
                     local_x = torch.cat([local_x, torch.zeros((TB,TC,TH,TW-local_x.size(-1)), device=global_x.device)], dim=-1)
                 else:
                     local_x = local_x[:,:,:,:TW]
-                
+
                 global_x[longer_idx] = self.fusion_model(global_x[longer_idx],local_x)
             x = global_x
         else:
@@ -137,7 +137,7 @@ class PatchEmbed(nn.Module):
             assert H == self.img_size[0] and W == self.img_size[1], \
                 f"Input image size ({H}*{W}) doesn't match model ({self.img_size[0]}*{self.img_size[1]})."
             x = self.proj(x)
-        
+
         if self.flatten:
             x = x.flatten(2).transpose(1, 2)  # BCHW -> BNC
         x = self.norm(x)
@@ -621,19 +621,19 @@ class HTSAT_Swin_Transformer(nn.Module):
         config (module): The configuration Module from config.py
     """
 
-    def __init__(self, spec_size=256, patch_size=4, patch_stride=(4,4), 
+    def __init__(self, spec_size=256, patch_size=4, patch_stride=(4,4),
                 in_chans=1, num_classes=527,
                  embed_dim=96, depths=[2, 2, 6, 2], num_heads=[4, 8, 16, 32],
                  window_size=8, mlp_ratio=4., qkv_bias=True, qk_scale=None,
                  drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1,
-                 norm_layer=nn.LayerNorm, 
+                 norm_layer=nn.LayerNorm,
                  ape=False, patch_norm=True,
-                 use_checkpoint=False, norm_before_mlp='ln', config = None, 
+                 use_checkpoint=False, norm_before_mlp='ln', config = None,
                  enable_fusion = False, fusion_type = 'None', **kwargs):
         super(HTSAT_Swin_Transformer, self).__init__()
 
         self.config = config
-        self.spec_size = spec_size 
+        self.spec_size = spec_size
         self.patch_stride = patch_stride
         self.patch_size = patch_size
         self.window_size = window_size
@@ -645,7 +645,7 @@ class HTSAT_Swin_Transformer(nn.Module):
         self.num_heads = num_heads
         self.num_layers = len(self.depths)
         self.num_features = int(self.embed_dim * 2 ** (self.num_layers - 1))
-        
+
         self.drop_rate = drop_rate
         self.attn_drop_rate = attn_drop_rate
         self.drop_path_rate = drop_path_rate
@@ -673,22 +673,22 @@ class HTSAT_Swin_Transformer(nn.Module):
         top_db = None
         self.interpolate_ratio = 32     # Downsampled ratio
         # Spectrogram extractor
-        self.spectrogram_extractor = Spectrogram(n_fft=config.window_size, hop_length=config.hop_size, 
-            win_length=config.window_size, window=window, center=center, pad_mode=pad_mode, 
+        self.spectrogram_extractor = Spectrogram(n_fft=config.window_size, hop_length=config.hop_size,
+            win_length=config.window_size, window=window, center=center, pad_mode=pad_mode,
             freeze_parameters=True)
         # Logmel feature extractor
-        self.logmel_extractor = LogmelFilterBank(sr=config.sample_rate, n_fft=config.window_size, 
-            n_mels=config.mel_bins, fmin=config.fmin, fmax=config.fmax, ref=ref, amin=amin, top_db=top_db, 
+        self.logmel_extractor = LogmelFilterBank(sr=config.sample_rate, n_fft=config.window_size,
+            n_mels=config.mel_bins, fmin=config.fmin, fmax=config.fmax, ref=ref, amin=amin, top_db=top_db,
             freeze_parameters=True)
         # Spec augmenter
-        self.spec_augmenter = SpecAugmentation(time_drop_width=64, time_stripes_num=2, 
+        self.spec_augmenter = SpecAugmentation(time_drop_width=64, time_stripes_num=2,
             freq_drop_width=8, freq_stripes_num=2) # 2 2
         self.bn0 = nn.BatchNorm2d(self.config.mel_bins)
 
 
         # split spctrogram into non-overlapping patches
         self.patch_embed = PatchEmbed(
-            img_size=self.spec_size, patch_size=self.patch_size, in_chans=self.in_chans, 
+            img_size=self.spec_size, patch_size=self.patch_size, in_chans=self.in_chans,
             embed_dim=self.embed_dim, norm_layer=self.norm_layer, patch_stride = patch_stride,
             enable_fusion=self.enable_fusion, fusion_type=self.fusion_type
             )
@@ -729,7 +729,7 @@ class HTSAT_Swin_Transformer(nn.Module):
         self.norm = self.norm_layer(self.num_features)
         self.avgpool = nn.AdaptiveAvgPool1d(1)
         self.maxpool = nn.AdaptiveMaxPool1d(1)
-        
+
         SF = self.spec_size // (2 ** (len(self.depths) - 1)) // self.patch_stride[0] // self.freq_ratio
         self.tscam_conv = nn.Conv2d(
             in_channels = self.num_features,
@@ -750,7 +750,7 @@ class HTSAT_Swin_Transformer(nn.Module):
                 self.fusion_model = AFF(channels=64, type='1D')
             elif self.fusion_type == 'iaff_1d':
                 self.fusion_model = iAFF(channels=64, type='1D')
-                
+
         self.apply(self._init_weights)
 
     def _init_weights(self, m):
@@ -774,7 +774,7 @@ class HTSAT_Swin_Transformer(nn.Module):
     def forward_features(self, x, longer_idx = None):
         # A deprecated optimization for using a hierarchical output from different blocks
 
-        frames_num = x.shape[2]        
+        frames_num = x.shape[2]
         x = self.patch_embed(x, longer_idx = longer_idx)
         if self.ape:
             x = x + self.absolute_pos_embed
@@ -794,8 +794,8 @@ class HTSAT_Swin_Transformer(nn.Module):
         x = x.permute(0,1,3,2,4).contiguous().reshape(B, C, c_freq_bin, -1)
         # get latent_output
         fine_grained_latent_output = torch.mean(x, dim = 2)
-        fine_grained_latent_output = interpolate(fine_grained_latent_output.permute(0,2,1).contiguous(), 8 * self.patch_stride[1]) 
-        
+        fine_grained_latent_output = interpolate(fine_grained_latent_output.permute(0,2,1).contiguous(), 8 * self.patch_stride[1])
+
         latent_output = self.avgpool(torch.flatten(x,2))
         latent_output = torch.flatten(latent_output, 1)
 
@@ -803,9 +803,9 @@ class HTSAT_Swin_Transformer(nn.Module):
 
         x = self.tscam_conv(x)
         x = torch.flatten(x, 2) # B, C, T
- 
-        fpx = interpolate(torch.sigmoid(x).permute(0,2,1).contiguous(), 8 * self.patch_stride[1]) 
-            
+
+        fpx = interpolate(torch.sigmoid(x).permute(0,2,1).contiguous(), 8 * self.patch_stride[1])
+
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
 
@@ -846,7 +846,7 @@ class HTSAT_Swin_Transformer(nn.Module):
         x = x.permute(0,1,3,2,4).contiguous()
         x = x.reshape(x.shape[0], x.shape[1], x.shape[2] * x.shape[3], x.shape[4])
         return x
-    
+
     # Repeat the wavform to a img size, if you want to use the pretrained swin transformer model
     def repeat_wat2img(self, x, cur_pos):
         B, C, T, F = x.shape
@@ -857,7 +857,7 @@ class HTSAT_Swin_Transformer(nn.Module):
         if T < target_T:
             x = nn.functional.interpolate(x, (target_T, x.shape[3]), mode="bicubic", align_corners=True)
         if F < target_F:
-            x = nn.functional.interpolate(x, (x.shape[2], target_F), mode="bicubic", align_corners=True)  
+            x = nn.functional.interpolate(x, (x.shape[2], target_F), mode="bicubic", align_corners=True)
         x = x.permute(0,1,3,2).contiguous() # B C F T
         x = x[:,:,:,cur_pos:cur_pos + self.spec_size]
         x = x.repeat(repeats = (1,1,4,1))
@@ -877,7 +877,7 @@ class HTSAT_Swin_Transformer(nn.Module):
                 x = self.reshape_wav2img(x)
                 output_dict = self.forward_features(x, longer_idx=[])
                 return output_dict
-                
+
         if not self.enable_fusion:
             x = x["waveform"].to(device=device, non_blocking=True)
             x = self.spectrogram_extractor(x)   # (batch_size, 1, time_steps, freq_bins)
@@ -890,7 +890,7 @@ class HTSAT_Swin_Transformer(nn.Module):
 
             if self.training and mixup_lambda is not None:
                 x = do_mixup(x, mixup_lambda)
-                
+
             x = self.reshape_wav2img(x)
             output_dict = self.forward_features(x)
         else:
@@ -932,7 +932,7 @@ class HTSAT_Swin_Transformer(nn.Module):
 
             x = self.reshape_wav2img(x)
             output_dict = self.forward_features(x, longer_idx = longer_list_idx)
-       
+
         # if infer_mode:
         #     # in infer mode. we need to handle different length audio input
         #     frame_num = x.shape[2]
@@ -964,7 +964,7 @@ class HTSAT_Swin_Transformer(nn.Module):
         #             clipwise_output  = clipwise_output / len(output_dicts)
         #             framewise_output = framewise_output / len(output_dicts)
         #             output_dict = {
-        #                 'framewise_output': framewise_output, 
+        #                 'framewise_output': framewise_output,
         #                 'clipwise_output': clipwise_output
         #             }
         #     else: # this part is typically used, and most easy one
@@ -973,8 +973,8 @@ class HTSAT_Swin_Transformer(nn.Module):
         # x = self.head(x)
 
         # We process the data in the dataloader part, in that here we only consider the input_T < fixed_T
-        
-        
+
+
 
         return output_dict
 
@@ -1024,8 +1024,7 @@ def create_htsat_model(audio_cfg, enable_fusion=False, fusion_type='None'):
                 enable_fusion = enable_fusion,
                 fusion_type = fusion_type
             )
-        
+
         return model
     except:
         raise RuntimeError(f'Import Model for {audio_cfg.model_name} not found, or the audio cfg parameters are not enough.')
-        

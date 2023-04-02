@@ -17,7 +17,7 @@ class LightningClassifier(pl.LightningModule):
         self._conf = cfg
         self.learning_rate = cfg.lr
         self.model_class = import_class(cfg.model_class)
-        
+
     def forward(self, x: Tensor) -> Tensor:
         return self.classifier(x)
 
@@ -25,7 +25,7 @@ class LightningClassifier(pl.LightningModule):
     def generate_max_prob(self, idx, max_new_tokens):
         """
         Based on NanoGPT
-        
+
         Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
         The token with highest probability is always selected.

@@ -423,7 +423,7 @@ def main():
     )
 
     args.lp_out_ch = len(list(args.class_index_dict.keys()))
-    # Linear Probe 
+    # Linear Probe
     logging.info(f"linear probe using mlp: {args.lp_mlp}")
     logging.info(f"linear probe using freeze: {args.lp_freeze}")
     logging.info(f"linear probe act layer: {args.lp_act}")

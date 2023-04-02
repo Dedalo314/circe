@@ -18,7 +18,7 @@ class LightningCirce(pl.LightningModule):
         self._conf = cfg
         self.learning_rate = cfg.lr
         self.model_class = import_class(cfg.model_class)
-        
+
     def forward(self, codes, clap_embedding, attention_mask=None) -> Tensor:
         return self.classifier(codes, clap_embedding, attention_mask)
 

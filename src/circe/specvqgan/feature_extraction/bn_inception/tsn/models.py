@@ -31,7 +31,7 @@ class TSN(nn.Module):
         if partial_bn:
             self.partialBN(True)
 
-    def _prepare_base_model(self):        
+    def _prepare_base_model(self):
         self.base_model = BNInception()
         self.base_model.last_layer_name = 'fc'
         self.input_size = 224
@@ -39,8 +39,8 @@ class TSN(nn.Module):
         self.input_std = [1]
 
         if self.modality == 'Flow':
-            self.input_mean = [128]        
-    
+            self.input_mean = [128]
+
     def partialBN(self, enable):
         self._enable_pbn = enable
 
@@ -50,7 +50,7 @@ class TSN(nn.Module):
         input_reshape = input.view((-1, sample_len) + input.size()[-2:])
         base_out = self.base_model(input_reshape)
         if base_out.data.shape[-1] == 1 and base_out.data.shape[-2] == 1:
-            base_out = base_out       
+            base_out = base_out
         return base_out
 
     def _construct_flow_model(self, base_model):

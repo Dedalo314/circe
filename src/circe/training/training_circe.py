@@ -7,7 +7,7 @@ import hydra
 import pytorch_lightning as pl
 
 from circe.utils.import_class import import_class
-from circe.models.LightningARCLAP import LightningARCLAP
+from circe.models.LightningCirce import LightningCirce
 from circe.data.LightningDataModule import LightningDataModule
 
 # Default hydra logger
@@ -20,7 +20,7 @@ def main(cfg):
 
     logger.info(f"Batch size: {cfg.data.train.batch_size}")
 
-    classifier = LightningARCLAP(cfg=cfg.model)
+    classifier = LightningCirce(cfg=cfg.model)
 
     trainer = pl.Trainer(
         accelerator=cfg.trainer.accelerator,

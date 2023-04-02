@@ -1,14 +1,14 @@
-model_class: circe.models.gpt.circeGPT_AR.CirceGPT_AR
-n_positions: 384
-vocab_size: 1024 # GPT-2 vocab_size of 50257, padded up to nearest multiple of 64 for efficiency
-n_layer: 12
-n_head: 12
-n_embd: 768
+model_class: circe.models.gpt.circeGPT.CirceGPT
+n_positions: 301
+vocab_size: 1024
+n_layer: 8
+n_head: 8
+n_embd: 384
 dropout: 0.2
 bias: false # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
-lr: 1e-5
+lr: 1e-4
 weight_decay: 1e-1
 beta1: 0.9
 beta2: 0.95
-path_pretrained_clap: /home/daedalus/Development/CLAP/epoch_top_0.pt
 codebook_size: 1024
+block_size: 301

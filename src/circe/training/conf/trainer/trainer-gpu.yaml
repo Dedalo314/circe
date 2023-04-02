@@ -1,4 +1,4 @@
-epochs: 100
+epochs: 100_000
 accelerator: gpu
 devices: -1
 default_root_dir: "???"

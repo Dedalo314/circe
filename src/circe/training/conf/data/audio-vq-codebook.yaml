@@ -1,12 +1,11 @@
 dataset:
   dataset_class: circe.datasets.audio_vq_codebook_dataset.AudioVQCodebookDataset
-  codes_data_dir: /home/daedalus/Development/Circe/datasets/music_nocopyright_22050hz_specvqgan
-  audio_data_dir: /home/daedalus/Development/Circe/datasets/music_nocopyright_wav
-  block_size: 128
+  codes_data_dir: /Circe/datasets/music_nocopyright_22050hz_specvqgan
+  audio_data_dir: /Circe/datasets/music_nocopyright_wav
   train_percentage: 0.8
-  chunk_duration: 5 # in seconds
+  chunk_duration: 6 # in seconds
 train:
-  batch_size: 24
+  batch_size: 16
   shuffle: true
 val:
   batch_size: 8

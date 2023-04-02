@@ -1,4 +1,4 @@
 defaults:
-  - data: audio-vq-codebook
+  - data: clap-embed-encodec-codebook
   - model: circe-gpt
   - trainer: trainer-gpu

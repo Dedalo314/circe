@@ -1,0 +1,15 @@
+dataset:
+  dataset_class: circe.datasets.encodec_codebook_dataset.EnCodecCodebookDataset
+  codes_data_dir: /Circe/datasets/music_all_piano_encodec_24khz_3kbps
+  train_percentage: 1.5
+  chunk_duration: 3 # in seconds
+  encodec:
+    sampling_rate: 24_000
+    num_codebooks: 4
+train:
+  batch_size: 8
+  shuffle: true
+val:
+  batch_size: 8
+test:
+  batch_size: 8

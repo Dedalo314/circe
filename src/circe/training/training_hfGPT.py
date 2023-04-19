@@ -4,7 +4,8 @@ Training script using hydra.cc and PL.
 import logging
 
 import hydra
-import pytorch_lightning as pl
+import lightning.pytorch as pl
+from lightning_colossalai import ColossalAIStrategy
 import torch
 
 from circe.utils.import_class import import_class
@@ -22,22 +23,19 @@ def main(cfg):
 
     classifier = LightningClassifier(cfg=cfg.model)
 
-    if "ckpt_path" in cfg.model:
-        classifier.configure_sharded_model()
-        classifier.load_state_dict(torch.load(cfg.model.ckpt_path)["state_dict"])
-
     trainer = pl.Trainer(
         accelerator=cfg.trainer.accelerator,
         devices=cfg.trainer.devices,
         max_epochs=cfg.trainer.epochs,
         default_root_dir=cfg.trainer.default_root_dir,
-        strategy=pl.strategies.colossalai.ColossalAIStrategy(
+        strategy=ColossalAIStrategy(
             placement_policy="auto",
             initial_scale=32
         ),
         num_sanity_val_steps=0,
         precision=16,
-        log_every_n_steps=cfg.trainer.log_every_n_steps
+        log_every_n_steps=cfg.trainer.log_every_n_steps,
+        limit_val_batches=0
     )
     trainer.fit(classifier, data_module)
 

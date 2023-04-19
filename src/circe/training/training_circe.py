@@ -4,7 +4,8 @@ Training script using hydra.cc and PL.
 import logging
 
 import hydra
-import pytorch_lightning as pl
+import lightning.pytorch as pl
+from lightning_colossalai import ColossalAIStrategy
 
 from circe.utils.import_class import import_class
 from circe.models.LightningCirce import LightningCirce
@@ -27,12 +28,12 @@ def main(cfg):
         devices=cfg.trainer.devices,
         max_epochs=cfg.trainer.epochs,
         default_root_dir=cfg.trainer.default_root_dir,
-        strategy=pl.strategies.colossalai.ColossalAIStrategy(
+        strategy=ColossalAIStrategy(
             placement_policy="auto",
             initial_scale=32
         ),
         num_sanity_val_steps=0,
-        precision=16,
+        precision="16-mixed",
         log_every_n_steps=cfg.trainer.log_every_n_steps
     )
     if "checkpoint" in cfg.model:

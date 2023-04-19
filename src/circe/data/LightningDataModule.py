@@ -5,7 +5,7 @@ import os
 import datetime
 from tqdm import tqdm
 
-import pytorch_lightning as pl
+import lightning.pytorch as pl
 from torch.utils.data import DataLoader
 
 from circe.utils.import_class import import_class

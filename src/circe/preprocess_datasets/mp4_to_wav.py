@@ -8,7 +8,7 @@ from functools import partial
 from tqdm import tqdm
 
 def parse_args(args=None):
-    parser = argparse.ArgumentParser("Convert .mp4 from YT to .wav")
+    parser = argparse.ArgumentParser("Convert .mp4 to .wav")
     parser.add_argument("-i", "--in_folder", type=str, required=True,
         help="Input folder with .mp4 to convert to .wav")
     parser.add_argument("-o", "--out_folder", type=str, required=True,

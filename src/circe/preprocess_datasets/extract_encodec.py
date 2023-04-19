@@ -16,7 +16,7 @@ def parse_args(args=None):
     parser.add_argument("-o", "--out_folder", type=str, required=True,
         help="Output folder to store extracted quantized features")
     parser.add_argument("--max_samples", type=int,
-        help="Maximum no. samples in waveform at 24 kHz")
+        help="Maximum no. samples in waveform at 24 kHz. (Default: all)")
     return parser.parse_args(args=args)
 
 def main(args):

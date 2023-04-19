@@ -8,7 +8,7 @@ from functools import partial
 from tqdm import tqdm
 
 def parse_args(args=None):
-    parser = argparse.ArgumentParser("Remove whitespaces from filenames, done inplace")
+    parser = argparse.ArgumentParser("Remove whitespaces from .wav filenames, done inplace")
     parser.add_argument("-i", "--in_folder", type=str, required=True,
         help="Input folder with .wav to extract quantized features with EnCodec")
     parser.add_argument("-p", "--num_processes", type=int, default=8,

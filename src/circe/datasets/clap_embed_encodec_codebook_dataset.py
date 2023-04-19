@@ -62,9 +62,11 @@ class CLAPEmbedEnCodecCodebookDataset(torch.utils.data.Dataset):
         ) // self.num_codebooks) * self.num_codebooks
         rand_start_frame = int(rand_start_frame)
         codes_chunk = torch.from_numpy(
-            codes[rand_start_frame:rand_start_frame + self.chunk_ncodes_encodec])
+            codes[rand_start_frame:rand_start_frame + self.chunk_ncodes_encodec]
+        )
         labels_chunk = torch.from_numpy(
-            codes[rand_start_frame:rand_start_frame + self.chunk_ncodes_encodec + 1])
+            codes[rand_start_frame:rand_start_frame + self.chunk_ncodes_encodec + 1]
+        )
 
         clap_embed = np.load(clap_file)
 

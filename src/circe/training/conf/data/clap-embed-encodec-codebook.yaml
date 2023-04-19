@@ -1,14 +1,14 @@
 dataset:
   dataset_class: circe.datasets.clap_embed_encodec_codebook_dataset.CLAPEmbedEnCodecCodebookDataset
-  codes_data_dir: /Circe/datasets/music_all_encodec_24khz_3kbps
-  clap_embeds_data_dir: /Circe/datasets/music_all_clapaudio
+  codes_data_dir: /Circe/datasets/music_all_piano_encodec_24khz_3kbps
+  clap_embeds_data_dir: /Circe/datasets/music_all_piano_clapaudio
   train_percentage: 0.9
-  chunk_duration: 1 # in seconds
+  chunk_duration: 3 # in seconds
   encodec:
     sampling_rate: 24_000
     num_codebooks: 4
 train:
-  batch_size: 16
+  batch_size: 4
   shuffle: true
 val:
   batch_size: 16

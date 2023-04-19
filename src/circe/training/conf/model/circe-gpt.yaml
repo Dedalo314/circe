@@ -1,5 +1,5 @@
 model_class: circe.models.gpt.circeGPT.CirceGPT
-n_positions: 301
+n_positions: 901
 vocab_size: 1024
 n_layer: 8
 n_head: 8
@@ -11,4 +11,4 @@ weight_decay: 1e-1
 beta1: 0.9
 beta2: 0.95
 codebook_size: 1024
-block_size: 301
+block_size: 901

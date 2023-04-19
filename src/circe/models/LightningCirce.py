@@ -1,7 +1,7 @@
 import logging
 
 from torch import Tensor, nn, inference_mode, topk, multinomial, cat, max
-import pytorch_lightning as pl
+import lightning.pytorch as pl
 from einops import rearrange
 
 from circe.utils.import_class import import_class
@@ -14,7 +14,7 @@ class LightningCirce(pl.LightningModule):
     """
     def __init__(self, cfg) -> None:
         super().__init__()
-        self.save_hyperparameters()
+        self.save_hyperparameters(cfg)
         self._conf = cfg
         self.learning_rate = cfg.lr
         self.model_class = import_class(cfg.model_class)
@@ -63,7 +63,11 @@ class LightningCirce(pl.LightningModule):
     def training_step(self, train_batch, batch_idx):
         clap_embedding, codes, labels = train_batch
         logits = self(codes, clap_embedding=clap_embedding, attention_mask=None)
-        loss = nn.functional.cross_entropy(logits.reshape(-1, logits.size(-1)), labels.reshape(-1), ignore_index=-1)
+        loss = nn.functional.cross_entropy(
+            rearrange(logits, "b s c -> (b s) c", c=self._conf.vocab_size),
+            rearrange(labels, "b s -> (b s)")
+        )
+        # loss = nn.functional.cross_entropy(logits.reshape(-1, logits.size(-1)), labels.reshape(-1), ignore_index=-1)
         self.log("Loss/train", loss)
         return loss
 

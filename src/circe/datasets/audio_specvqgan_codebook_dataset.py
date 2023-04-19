@@ -1,5 +1,5 @@
 """
-Dataset to train a GPT for EnCodec codebook 1 generation.
+Dataset to train a GPT for SpecVQGAN generation.
 """
 import os
 import logging
@@ -14,7 +14,7 @@ from einops import rearrange
 logger = logging.getLogger(__name__)
 
 
-class AudioVQCodebookDataset(torch.utils.data.Dataset):
+class AudioSpecVQGANCodebookDataset(torch.utils.data.Dataset):
     def __init__(self, cfg, split):
         super().__init__()
 
@@ -81,7 +81,6 @@ class AudioVQCodebookDataset(torch.utils.data.Dataset):
                 self.chunk_frames_22050
             )
         ]
-        # print(f"{codes_chunk.shape=}\n{labels_chunk.shape=}\n{audio_waveform.shape=}\n")
 
         return audio_waveform, codes_chunk, labels_chunk
 

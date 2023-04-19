@@ -1,5 +1,5 @@
 dataset:
-  dataset_class: circe.datasets.audio_vq_codebook_dataset.AudioVQCodebookDataset
+  dataset_class: circe.datasets.audio_specvqgan_codebook_dataset.AudioSpecVQGANCodebookDataset
   codes_data_dir: /Circe/datasets/music_nocopyright_22050hz_specvqgan
   audio_data_dir: /Circe/datasets/music_nocopyright_wav
   train_percentage: 0.8

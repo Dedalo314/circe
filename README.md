@@ -1,5 +1,7 @@
 # Music generation project for the subject Deep Learning for Acoustic Signal Processing (DLAS)
 
+**Disclaimer:** this project is meant to be used only with audio without copyright, or audio you have permission to use.
+
 ## Project structure
 The source code is divided as follows:
 - **data:** contains the Lightning data modules.
